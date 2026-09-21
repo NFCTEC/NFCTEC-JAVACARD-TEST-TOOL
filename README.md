@@ -1,90 +1,48 @@
-# NFCTEC JavaCard Tool: A GlobalPlatform Host for CAP Load, Secure Channel, and Card Management
+# NFCTEC-JAVACARD-TEST-TOOL
 
-A Windows GlobalPlatform host for Java Card work: SCP02/SCP03, CPLC readout, drag-and-drop CAP download, and an APDU console in one workspace.
+Java Card work usually means several tools at once: a GlobalPlatform shell for the secure channel, another utility for CAP load, and a console for raw APDUs. **NFCTEC JavaCard Tool** puts those steps in one desktop host so you can authenticate, inspect the card, load a package, and debug APDUs without switching windows.
 
-[Download Windows installer 1.2.0](./NFCTEC_JavaCard_Tool_Setup_1.2.0.exe) · [www.nfctec.com](https://www.nfctec.com) · [Blog article](https://www.nfctec.com/en/blog/nfctec-javacard-tool)
+Connect a PC/SC reader, select the Issuer Security Domain, and authenticate with ENC / MAC / DEK. The tool detects **SCP02** or **SCP03** from the card, then wraps later commands according to the security level you chose (plain, MAC, or ENC + MAC).
 
-## NFCTEC JavaCard Tool
+From there you can list applets, applications, the ISD and SSDs; drop a `.cap` file to parse and download; read CPLC; probe free memory; put keys; or send hex APDUs from the console. Invalid CAP files are rejected before anything is sent to the card.
 
-Java Card work usually means several tools at once: a GlobalPlatform shell for the secure channel, another utility for CAP load, and a console for raw APDUs. NFCTEC JavaCard Tool puts those steps in one desktop host so you can authenticate, inspect the card, load a package, and debug APDUs without switching windows.
+Version 1.2.0 is built for PC/SC readers on Windows. It targets development, sample bring-up, and small-batch personalization — a practical bench tool, not a factory CMS.
 
-Version 1.2.0 is built for PC/SC readers on Windows. It targets development, sample bring-up, and small-batch personalization—not a replacement for a factory CMS, but a practical bench tool.
+Download: [`NFCTEC_JavaCard_Tool_Setup_1.2.0.exe`](./NFCTEC_JavaCard_Tool_Setup_1.2.0.exe)
 
-### What it is
+## Screenshots
 
-The application is a GlobalPlatform host. It selects the Issuer Security Domain, runs INITIALIZE UPDATE / EXTERNAL AUTHENTICATE, then wraps later commands according to the security level you chose.
+### APDU Console
 
-Typical flow:
+Send hex APDUs and watch traffic in the live log. After authentication, wrapping follows the current security level. Auto GET RESPONSE handles `61xx` / `6Cxx`.
 
-1. Connect a PC/SC reader and select the ISD.
-2. Authenticate with ENC / MAC / DEK (SCP02 or SCP03, detected from the card).
-3. List applets, applications, the ISD, and SSDs.
-4. Drop a `.cap` file, check the format, then download (optional install after load).
-5. Read CPLC, probe free memory, put keys, or send APDUs from the console.
+<img src="1.png" alt="APDU Console" width="920">
 
-### Secure channel: pick what the card accepts
+### Secure channel
 
-![Channel — ISD, keys, and SCP02 authentication](2.png)
+Pick an ISD AID, set KVN and security level, enter ENC / MAC / DEK, then Authenticate. The header shows `AUTH SCP02` or `AUTH SCP03` when the session is open.
 
-EXTERNAL AUTHENTICATE P1 must match what the card allows. This build exposes the three levels that real GP cards commonly accept:
+<img src="2.png" alt="Secure channel authentication" width="920">
 
-1. **00 Plain** — no secure messaging. Commands go as `80 …` with a clear data field. Useful when you need to see LOAD/INSTALL on the wire.
-2. **01 Plain + MAC** — C-MAC only. Data stays in the clear; the card checks the MAC.
-3. **03 ENC + MAC** — C-ENC and C-MAC. After authentication, LOAD / INSTALL / DELETE are sent as `84` with encrypted data and a MAC. This is the setting to use if you do not want a clear CAP on the bus.
+### Card registry
 
-SCP02 wrapping follows the usual i=15 pattern (C-MAC on the modified plaintext APDU, then encrypt). SCP03 encrypts first with the encryption counter, then computes AES-CMAC on the ciphertext—aligned with GlobalPlatform Amendment D and common host tools.
+List packages, applets, applications, ISD and SSD from GET STATUS. Right-click to Select, Delete, Lock / Unlock, or Install. Card Info reads CPLC (`9F7F`).
 
-Authenticate after you change the security level. A wrong P1 typically returns `6A86`.
+<img src="3.png" alt="Card registry list" width="920">
 
-ISD presets include GlobalPlatform / NXP JCOP (`A000000151000000`), Visa, Mastercard, Gemalto, Oberthur / Idemia, and China Mobile USIM. You can also type a custom AID or run an empty SELECT to discover the ISD.
+## About [nfctec.com](https://www.nfctec.com)
 
-### CAP download
+[NFCTEC](https://www.nfctec.com) is a full-stack NFC and smart card company. We co-develop software, design hardware, and connect cloud backends — from first prototype to certified mass production.
 
-CAP files can be browsed or dragged onto the CAP page. The tool checks that the file is a Java Card CAP (ZIP with `Header.cap` / `.cap` Header component) before anything is sent to the card. Invalid files are rejected with an error; they never become LOAD blocks.
+**What we cover**
 
-Download path:
+- **Software** — mobile wallet SDKs, issuance and reading software for ePassports, bank cards (EMV), NTAG 424 DNA, DESFire, MIFARE, FeliCa, JavaCard and more
+- **Hardware** — USB / Serial / USB CCID readers, embedded modules, NFC field detector cards, antennas and blank cards
+- **Cloud** — issuance and verification APIs, HSM-backed keys and SaaS consoles
+- **Industry solutions** — payment, transit, identity, access control and IoT
 
-1. optional DELETE of the same package
-2. INSTALL [for load]
-3. LOAD in blocks
-4. optional INSTALL [for install] if you enable install-after-load
+**Focus areas include** banking & payment, transit & ticketing, government & ID, access control, healthcare, IoT, brand protection, retail & loyalty, automotive, mobile wallet, and security / crypto wallets.
 
-Block size is limited so C-MAC / C-ENC still fit in a short APDU. Progress shows as `LOAD n/N` in the status area; the log stays compact so a large CAP does not freeze the UI.
+This JavaCard Tool is part of that stack: a Windows GlobalPlatform host for SCP02/SCP03, CAP load, CPLC readout, and APDU debugging.
 
-If you authenticated with `03`, the payload on the reader is ciphertext plus MAC—not a raw `80 E8` CAP image.
-
-### CPLC and the card list
-
-![Card — registry list after GET STATUS](3.png)
-
-Card Info reads GET DATA `9F7F` and parses the 42-byte CPLC: IC fabricator, IC type, OS id, dates (YDDD), serial, batch, and a CUID. Known vendor and OS codes (for example NXP / JCOP) are shown next to the hex.
-
-The Card page lists registry objects from GET STATUS (ISD, applications, load files and modules). After a successful CAP load, the list is refreshed. An empty application list returning `6A88` is normal if you loaded a package but did not install an instance.
-
-Right-click an entry to copy the AID, Select, Delete (optionally with related objects), Lock / Unlock, or Install.
-
-### APDU console and extras
-
-![APDU Console — send hex commands with a live log](1.png)
-
-The console sends hex APDUs and handles GET RESPONSE (`61xx` / `6Cxx`). After a successful authenticate, wrapping follows the current security level. Command history keeps the last 20 APDUs.
-
-Also included:
-
-1. Put Key and Store Data
-2. Card lifecycle (INITIALIZED / SECURED / LOCKED)
-3. Lock / unlock of selected applications
-4. Free-memory probe (log output)
-5. Light and dark themes
-
-Default test keys (`4041…4E4F`) are for lab cards only. Failed authentications are counted: too many tries can lock the ISD.
-
-### Who it is for
-
-1. Engineers bringing up JCOP, ACOS, or other GP Java Cards on the bench
-2. Teams that need a visible SCP02/SCP03 session plus CAP load in one UI
-3. Anyone who wants CPLC decoded instead of a raw `9F7F` dump
-
-Website: [www.nfctec.com](https://www.nfctec.com)
-
-NFCTEC JavaCard Tool 1.2.0 is available as a Windows installer ([`NFCTEC_JavaCard_Tool_Setup_1.2.0.exe`](./NFCTEC_JavaCard_Tool_Setup_1.2.0.exe)). Install, attach a reader, authenticate, then load a CAP or open Card Info.
+Learn more, request samples, or talk to the engineering team: **[https://www.nfctec.com](https://www.nfctec.com)**
