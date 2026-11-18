@@ -1,48 +1,66 @@
-# NFCTEC-JAVACARD-TEST-TOOL
+**[English](README.md)** · **[中文](README.zh-CN.md)**
 
-Java Card work usually means several tools at once: a GlobalPlatform shell for the secure channel, another utility for CAP load, and a console for raw APDUs. **NFCTEC JavaCard Tool** puts those steps in one desktop host so you can authenticate, inspect the card, load a package, and debug APDUs without switching windows.
+**[www.nfctec.com](https://www.nfctec.com)** — NFCTEC NFC & smart card software, hardware and cloud.
 
-Connect a PC/SC reader, select the Issuer Security Domain, and authenticate with ENC / MAC / DEK. The tool detects **SCP02** or **SCP03** from the card, then wraps later commands according to the security level you chose (plain, MAC, or ENC + MAC).
+# JavaCard GlobalPlatform Tool — CAP Load, SCP02/SCP03, APDU
 
-From there you can list applets, applications, the ISD and SSDs; drop a `.cap` file to parse and download; read CPLC; probe free memory; put keys; or send hex APDUs from the console. Invalid CAP files are rejected before anything is sent to the card.
+Windows and macOS **Java Card** / **GlobalPlatform** host for **NXP JCOP**, ACOS and other GP cards: **SCP02 / SCP03** secure channel, **CAP load** / INSTALL, **CPLC** readout, card registry (GET STATUS), Put Key, and an **APDU** console over PC/SC.
 
-Version 1.2.0 is built for PC/SC readers on Windows. It targets development, sample bring-up, and small-batch personalization — a practical bench tool, not a factory CMS.
+- Website: [https://www.nfctec.com](https://www.nfctec.com)
+- Product: [JavaCard Tool](https://www.nfctec.com/en/tools/javacard-tool)
+- **Download (Windows x64 & macOS):** [https://nfctec.com/en/downloads](https://nfctec.com/en/downloads)
 
-Download: [`NFCTEC_JavaCard_Tool_Setup_1.2.0.exe`](./NFCTEC_JavaCard_Tool_Setup_1.2.0.exe)
+Authenticate to the Issuer Security Domain, list applets, drop a `.cap` to load, then debug APDU traces — one bench tool instead of a GP shell plus a separate CAP loader.
+
+## Download
+
+| Platform | File | Link |
+| --- | --- | --- |
+| Windows x64 | NFCTEC-JavaCard-TOOL | [Download Center](https://nfctec.com/en/downloads) |
+| macOS | NFCTEC-JavaCard-Tool-macOS | [Download Center](https://nfctec.com/en/downloads) |
+
+Works with PC/SC USB CCID readers (ACS ACR122U / ACR1252, Identiv, HID Omnikey, Feitian, contact and contactless ISO 7816 / ISO 14443).
+
+This GitHub page is documentation and screenshots only. Installers are not hosted here — get them from [www.nfctec.com](https://www.nfctec.com).
+
+## Features
+
+**Secure channel (SCP02 / SCP03)**  
+INITIALIZE UPDATE / EXTERNAL AUTHENTICATE with ENC / MAC / DEK. Auto-detect SCP02 (3DES, i=15) or SCP03 (AES-CMAC). Security level: `00` Plain, `01` Plain + MAC, `03` ENC + MAC. ISD presets: GlobalPlatform / NXP JCOP `A000000151000000`, Visa, Mastercard, Gemalto, Oberthur / Idemia.
+
+**CAP load & INSTALL**  
+Drag-and-drop Java Card `.cap`. Parse package AID / module AID, then DELETE → INSTALL [for load] → LOAD in blocks → optional INSTALL [for install]. Invalid CAP (no `Header.cap`) is rejected before the card sees it.
+
+**Card registry & CPLC**  
+GET STATUS list: packages, applets, applications, ISD, SSD. Select, Delete, Lock / Unlock, Install. Card Info parses GET DATA `9F7F` CPLC (IC fabricator, OS, serial). Put Key, Store Data, lifecycle, free-memory probe.
+
+**APDU console**  
+Hex APDU send/receive, history, auto GET RESPONSE (`61xx` / `6Cxx`). After AUTH, wrapping follows the current SCP security level. Live log for `6982` / `6985` / `6A82` / `6A86` bring-up.
+
+Lab default keys `4041…4E4F` only. Production ISD keys stay on [www.nfctec.com](https://www.nfctec.com) projects.
 
 ## Screenshots
 
-### APDU Console
+APDU console — send hex commands with a live log:
 
-Send hex APDUs and watch traffic in the live log. After authentication, wrapping follows the current security level. Auto GET RESPONSE handles `61xx` / `6Cxx`.
+![JavaCard APDU console](1.png)
 
-<img src="1.png" alt="APDU Console" width="920">
+SCP02/SCP03 channel — ISD, ENC/MAC/DEK, Authenticate:
 
-### Secure channel
+![JavaCard GlobalPlatform SCP02 authentication](2.png)
 
-Pick an ISD AID, set KVN and security level, enter ENC / MAC / DEK, then Authenticate. The header shows `AUTH SCP02` or `AUTH SCP03` when the session is open.
+Card registry — GET STATUS applets, ISD, SSD:
 
-<img src="2.png" alt="Secure channel authentication" width="920">
+![JavaCard GET STATUS card list](3.png)
 
-### Card registry
+## Related products
 
-List packages, applets, applications, ISD and SSD from GET STATUS. Right-click to Select, Delete, Lock / Unlock, or Install. Card Info reads CPLC (`9F7F`).
+From [www.nfctec.com](https://www.nfctec.com): **JavaCard JCOP** applets, NTAG 424 DNA / DNA TT (NT4H2421Gx), MIFARE DESFire EV2/EV3, USB/CCID readers, issuance workbench, and HSM-backed cloud.
 
-<img src="3.png" alt="Card registry list" width="920">
+[Download Center](https://nfctec.com/en/downloads) also has **NTAG424 DNA Tool** and **Issuance Workbench**.
 
-## About [nfctec.com](https://www.nfctec.com)
+## About NFCTEC
 
-[NFCTEC](https://www.nfctec.com) is a full-stack NFC and smart card company. We co-develop software, design hardware, and connect cloud backends — from first prototype to certified mass production.
+[NFCTEC](https://www.nfctec.com) — Shenzhen NFC factory: JavaCard / GlobalPlatform tools, encoding software, USB/CCID readers, antennas, PVC / wet inlay / wristband, HSM-backed issuance.
 
-**What we cover**
-
-- **Software** — mobile wallet SDKs, issuance and reading software for ePassports, bank cards (EMV), NTAG 424 DNA, DESFire, MIFARE, FeliCa, JavaCard and more
-- **Hardware** — USB / Serial / USB CCID readers, embedded modules, NFC field detector cards, antennas and blank cards
-- **Cloud** — issuance and verification APIs, HSM-backed keys and SaaS consoles
-- **Industry solutions** — payment, transit, identity, access control and IoT
-
-**Focus areas include** banking & payment, transit & ticketing, government & ID, access control, healthcare, IoT, brand protection, retail & loyalty, automotive, mobile wallet, and security / crypto wallets.
-
-This JavaCard Tool is part of that stack: a Windows GlobalPlatform host for SCP02/SCP03, CAP load, CPLC readout, and APDU debugging.
-
-Learn more, request samples, or talk to the engineering team: **[https://www.nfctec.com](https://www.nfctec.com)**
+[www.nfctec.com](https://www.nfctec.com) · [Downloads](https://nfctec.com/en/downloads) · [JavaCard Tool](https://www.nfctec.com/en/tools/javacard-tool)
